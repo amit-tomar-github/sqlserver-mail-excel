@@ -1,0 +1,24 @@
+
+Declare @ProfileName nvarchar(100) = 'Prf_DailySalesData' -- this profile we have created in Database Mail
+	Declare @Recipient_EmailId nvarchar(500) = 'amit.tomar@go4life.in;info@go4life.in'
+	Declare @DBName nvarchar(100) = 'go4life_insights'
+	---******************Daily Sales Data Report**************************************
+	Declare @TodayDate nvarchar(50) = Format(GetDate(),'dd-MMM-yyyy')
+	Declare @SqlQry nvarchar(max) = 'set nocount on;Exec PRC_DailySalesReport_ClusterWise '''+@TodayDate +''''
+	--DECLARE @tab char(1) = CHAR(9) -- separator for TAB, it will auto created different column in excel
+	DECLARE @tab char(1) = '	' -- tab separator ### both way are correct
+	EXEC msdb.dbo.sp_send_dbmail
+	@profile_name = @ProfileName,
+	@recipients = @Recipient_EmailId,
+	@execute_query_database = @DBName,
+	--@query = 'set nocount on;Exec go4life_insights.dbo.PRC_DailySalesReport_ClusterWise ''04-nov-2020''',
+	@query = @SqlQry,
+	@subject = 'Today Sales Data',
+	@attach_query_result_as_file = 1,
+	@query_attachment_filename = 'TodaySalesData.xls',
+	--@query_attachment_filename = 'test.csv',
+	@query_result_header = 1,
+	@query_result_separator = @tab,
+	--@exclude_query_output = 1,
+	--@query_no_truncate = 1
+	@query_result_no_padding = 1
